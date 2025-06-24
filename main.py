@@ -63,3 +63,48 @@ def add_redakcja():
     entry_red_city.delete(0, tk.END)
     refresh_comboboxes()
     update_map()
+
+def update_redakcja():
+    selected = tree_red.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    name = entry_red_name.get().strip()
+    city = entry_red_city.get().strip()
+    if not name or not city:
+        messagebox.showerror("Błąd", "Proszę podać nazwę i miasto redakcji.")
+        return
+    coords = get_coordinates_for_city(city)
+    if coords is None:
+        messagebox.showerror("Błąd", f"Nie znaleziono współrzędnych GPS dla '{city}'.")
+        return
+    for r in redakcje:
+        if r["id"] == item_id:
+            r["name"] = name
+            r["city"] = city
+            r["coords"] = coords
+    tree_red.item(str(item_id), values=(name, city))
+    refresh_comboboxes()
+    update_map()
+
+def delete_redakcja():
+    global redakcje, pracownicy, punkty_dystrybucji
+    selected = tree_red.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    redakcje = [r for r in redakcje if r["id"] != item_id]
+    pracownicy = [p for p in pracownicy if p["redakcja_id"] != item_id]
+    punkty_dystrybucji = [d for d in punkty_dystrybucji if d["redakcja_id"] != item_id]
+    tree_red.delete(selected[0])
+    for tree in [tree_prac, tree_punkt]:
+        for item in tree.get_children():
+            tree.delete(item)
+    for p in pracownicy:
+        red = next((r for r in redakcje if r["id"] == p["redakcja_id"]), None)
+        tree_prac.insert("", "end", iid=str(p["id"]), values=(p["name"], p["city"], red["name"] if red else "?"))
+    for d in punkty_dystrybucji:
+        red = next((r for r in redakcje if r["id"] == d["redakcja_id"]), None)
+        tree_punkt.insert("", "end", iid=str(d["id"]), values=(d["city"], red["name"] if red else "?"))
+    refresh_comboboxes()
+    update_map()
