@@ -133,3 +133,38 @@ def add_pracownik():
     entry_prac_city.delete(0, tk.END)
     combo_prac_red.set('')
     update_map()
+
+def update_pracownik():
+    selected = tree_prac.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    name = entry_prac_name.get().strip()
+    city = entry_prac_city.get().strip()
+    redakcja_name = combo_prac_red.get()
+    if not name or not city or not redakcja_name:
+        messagebox.showerror("Błąd", "Uzupełnij wszystkie dane pracownika.")
+        return
+    coords = get_coordinates_for_city(city)
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if coords is None or redakcja is None:
+        messagebox.showerror("Błąd", "Nieprawidłowe dane.")
+        return
+    for p in pracownicy:
+        if p["id"] == item_id:
+            p["name"] = name
+            p["city"] = city
+            p["coords"] = coords
+            p["redakcja_id"] = redakcja["id"]
+    tree_prac.item(str(item_id), values=(name, city, redakcja_name))
+    update_map()
+
+def delete_pracownik():
+    global pracownicy
+    selected = tree_prac.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    pracownicy = [p for p in pracownicy if p["id"] != item_id]
+    tree_prac.delete(selected[0])
+    update_map()
