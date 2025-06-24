@@ -264,3 +264,9 @@ def show_selected_redakcja_on_map():
     for d in related_punkty:
         lat, lon = d["coords"]
         map_widget.set_marker(lat, lon, text=f"Punkt dystrybucji ({d['city']})")
+
+# === Comboboxy ===
+def refresh_comboboxes():
+    names = [r["name"] for r in redakcje]
+    combo_prac_red['values'] = names
+    combo_punkt_red['values'] = names
