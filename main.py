@@ -108,3 +108,28 @@ def delete_redakcja():
         tree_punkt.insert("", "end", iid=str(d["id"]), values=(d["city"], red["name"] if red else "?"))
     refresh_comboboxes()
     update_map()
+
+# === Funkcje dla Pracowników ===
+def add_pracownik():
+    global pracownicy, next_pracownik_id
+    name = entry_prac_name.get().strip()
+    city = entry_prac_city.get().strip()
+    redakcja_name = combo_prac_red.get()
+    if not name or not city or not redakcja_name:
+        messagebox.showerror("Błąd", "Uzupełnij wszystkie dane pracownika.")
+        return
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if redakcja is None:
+        messagebox.showerror("Błąd", "Wybrana redakcja nie istnieje.")
+        return
+    coords = get_coordinates_for_city(city)
+    if coords is None:
+        messagebox.showerror("Błąd", f"Nie znaleziono współrzędnych GPS dla '{city}'.")
+        return
+    pracownicy.append({"id": next_pracownik_id, "name": name, "city": city, "coords": coords, "redakcja_id": redakcja["id"]})
+    tree_prac.insert("", "end", iid=str(next_pracownik_id), values=(name, city, redakcja_name))
+    next_pracownik_id += 1
+    entry_prac_name.delete(0, tk.END)
+    entry_prac_city.delete(0, tk.END)
+    combo_prac_red.set('')
+    update_map()
