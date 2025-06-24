@@ -168,3 +168,106 @@ def delete_pracownik():
     pracownicy = [p for p in pracownicy if p["id"] != item_id]
     tree_prac.delete(selected[0])
     update_map()
+
+# === Funkcje dla Punktów Dystrybucji ===
+def add_punkt():
+    global punkty_dystrybucji, next_punkt_id
+    city = entry_punkt_city.get().strip()
+    redakcja_name = combo_punkt_red.get()
+    if not city or not redakcja_name:
+        messagebox.showerror("Błąd", "Uzupełnij wszystkie dane punktu.")
+        return
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if redakcja is None:
+        messagebox.showerror("Błąd", "Wybrana redakcja nie istnieje.")
+        return
+    coords = get_coordinates_for_city(city)
+    if coords is None:
+        messagebox.showerror("Błąd", f"Nie znaleziono współrzędnych GPS dla '{city}'.")
+        return
+    punkty_dystrybucji.append({"id": next_punkt_id, "city": city, "coords": coords, "redakcja_id": redakcja["id"]})
+    tree_punkt.insert("", "end", iid=str(next_punkt_id), values=(city, redakcja_name))
+    next_punkt_id += 1
+    entry_punkt_city.delete(0, tk.END)
+    combo_punkt_red.set('')
+    update_map()
+
+def update_punkt():
+    selected = tree_punkt.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    city = entry_punkt_city.get().strip()
+    redakcja_name = combo_punkt_red.get()
+    coords = get_coordinates_for_city(city)
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if not city or not redakcja or coords is None:
+        messagebox.showerror("Błąd", "Nieprawidłowe dane.")
+        return
+    for p in punkty_dystrybucji:
+        if p["id"] == item_id:
+            p["city"] = city
+            p["coords"] = coords
+            p["redakcja_id"] = redakcja["id"]
+    tree_punkt.item(str(item_id), values=(city, redakcja_name))
+    update_map()
+
+def delete_punkt():
+    global punkty_dystrybucji
+    selected = tree_punkt.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    punkty_dystrybucji = [p for p in punkty_dystrybucji if p["id"] != item_id]
+    tree_punkt.delete(selected[0])
+    update_map()
+
+# === Mapa ===
+def update_map():
+    map_widget.delete_all_marker()
+    for r in redakcje:
+        lat, lon = r["coords"]
+        map_widget.set_marker(lat, lon, text=f"{r['name']} (redakcja)")
+    for p in pracownicy:
+        lat, lon = p["coords"]
+        map_widget.set_marker(lat, lon, text=p["name"])
+    for d in punkty_dystrybucji:
+        lat, lon = d["coords"]
+        map_widget.set_marker(lat, lon, text="Punkt dystrybucji")
+
+def show_selected_redakcja_on_map():
+    selected = tree_red.selection()
+    if not selected:
+        messagebox.showinfo("Informacja", "Wybierz redakcję.")
+        return
+
+    item_id = int(selected[0])
+    redakcja = next((r for r in redakcje if r["id"] == item_id), None)
+    if not redakcja:
+        messagebox.showerror("Błąd", "Nie znaleziono redakcji.")
+        return
+
+    related_pracownicy = [p for p in pracownicy if p["redakcja_id"] == item_id]
+    related_punkty = [d for d in punkty_dystrybucji if d["redakcja_id"] == item_id]
+
+    map_widget.delete_all_marker()
+
+    lat_r, lon_r = redakcja["coords"]
+    map_widget.set_marker(lat_r, lon_r, text=f"{redakcja['name']} (redakcja)")
+    map_widget.set_position(lat_r, lon_r)
+    map_widget.set_zoom(8)
+
+    for p in related_pracownicy:
+        lat, lon = p["coords"]
+        map_widget.set_marker(lat, lon, text=f"{p['name']} (pracownik)")
+
+    for d in related_punkty:
+        lat, lon = d["coords"]
+        map_widget.set_marker(lat, lon, text=f"Punkt dystrybucji ({d['city']})")
+
+# === Comboboxy ===
+def refresh_comboboxes():
+    names = [r["name"] for r in redakcje]
+    combo_prac_red['values'] = names
+    combo_punkt_red['values'] = names
+
