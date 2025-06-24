@@ -39,3 +39,27 @@ def get_coordinates_for_city(city_name):
                 return (lat, lon)
     except:
         return None
+
+# === Funkcje dla Redakcji ===
+def add_redakcja():
+    global redakcje, next_redakcja_id
+    name = entry_red_name.get().strip()
+    city = entry_red_city.get().strip()
+    if not name or not city:
+        messagebox.showerror("Błąd", "Proszę podać nazwę i miasto redakcji.")
+        return
+    for r in redakcje:
+        if r["name"].lower() == name.lower():
+            messagebox.showerror("Błąd", f"Redakcja '{name}' już istnieje.")
+            return
+    coords = get_coordinates_for_city(city)
+    if coords is None:
+        messagebox.showerror("Błąd", f"Nie znaleziono współrzędnych GPS dla '{city}'.")
+        return
+    redakcje.append({"id": next_redakcja_id, "name": name, "city": city, "coords": coords})
+    tree_red.insert("", "end", iid=str(next_redakcja_id), values=(name, city))
+    next_redakcja_id += 1
+    entry_red_name.delete(0, tk.END)
+    entry_red_city.delete(0, tk.END)
+    refresh_comboboxes()
+    update_map()
