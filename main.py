@@ -270,3 +270,4 @@ def refresh_comboboxes():
     names = [r["name"] for r in redakcje]
     combo_prac_red['values'] = names
     combo_punkt_red['values'] = names
+
