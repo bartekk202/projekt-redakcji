@@ -334,3 +334,10 @@ combo_punkt_red.pack()
 tk.Button(frame_punkt, text="Dodaj punkt dystrybucji", command=add_punkt).pack(pady=2)
 tk.Button(frame_punkt, text="Aktualizuj punkt", command=update_punkt).pack(pady=2)
 tk.Button(frame_punkt, text="Usuń punkt", command=delete_punkt).pack(pady=2)
+
+map_widget = TkinterMapView(frame_map, width=1000, height=600, corner_radius=0)
+map_widget.pack(fill="both", expand=True)
+map_widget.set_position(52.0, 19.0)
+map_widget.set_zoom(6)
+
+root.mainloop()
