@@ -221,3 +221,46 @@ def delete_punkt():
     punkty_dystrybucji = [p for p in punkty_dystrybucji if p["id"] != item_id]
     tree_punkt.delete(selected[0])
     update_map()
+
+# === Mapa ===
+def update_map():
+    map_widget.delete_all_marker()
+    for r in redakcje:
+        lat, lon = r["coords"]
+        map_widget.set_marker(lat, lon, text=f"{r['name']} (redakcja)")
+    for p in pracownicy:
+        lat, lon = p["coords"]
+        map_widget.set_marker(lat, lon, text=p["name"])
+    for d in punkty_dystrybucji:
+        lat, lon = d["coords"]
+        map_widget.set_marker(lat, lon, text="Punkt dystrybucji")
+
+def show_selected_redakcja_on_map():
+    selected = tree_red.selection()
+    if not selected:
+        messagebox.showinfo("Informacja", "Wybierz redakcję.")
+        return
+
+    item_id = int(selected[0])
+    redakcja = next((r for r in redakcje if r["id"] == item_id), None)
+    if not redakcja:
+        messagebox.showerror("Błąd", "Nie znaleziono redakcji.")
+        return
+
+    related_pracownicy = [p for p in pracownicy if p["redakcja_id"] == item_id]
+    related_punkty = [d for d in punkty_dystrybucji if d["redakcja_id"] == item_id]
+
+    map_widget.delete_all_marker()
+
+    lat_r, lon_r = redakcja["coords"]
+    map_widget.set_marker(lat_r, lon_r, text=f"{redakcja['name']} (redakcja)")
+    map_widget.set_position(lat_r, lon_r)
+    map_widget.set_zoom(8)
+
+    for p in related_pracownicy:
+        lat, lon = p["coords"]
+        map_widget.set_marker(lat, lon, text=f"{p['name']} (pracownik)")
+
+    for d in related_punkty:
+        lat, lon = d["coords"]
+        map_widget.set_marker(lat, lon, text=f"Punkt dystrybucji ({d['city']})")
