@@ -271,3 +271,20 @@ def refresh_comboboxes():
     combo_prac_red['values'] = names
     combo_punkt_red['values'] = names
 
+# === GUI ===
+root = tk.Tk()
+root.title("Zarządzanie redakcjami")
+root.geometry("1100x700")
+
+notebook = ttk.Notebook(root)
+notebook.pack(fill='both', expand=True)
+
+frame_red = ttk.Frame(notebook)
+frame_prac = ttk.Frame(notebook)
+frame_punkt = ttk.Frame(notebook)
+frame_map = ttk.Frame(notebook)
+notebook.add(frame_red, text="Redakcje")
+notebook.add(frame_prac, text="Pracownicy")
+notebook.add(frame_punkt, text="Punkty dystrybucji")
+notebook.add(frame_map, text="Mapa")
+
