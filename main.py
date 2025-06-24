@@ -168,3 +168,56 @@ def delete_pracownik():
     pracownicy = [p for p in pracownicy if p["id"] != item_id]
     tree_prac.delete(selected[0])
     update_map()
+
+# === Funkcje dla Punktów Dystrybucji ===
+def add_punkt():
+    global punkty_dystrybucji, next_punkt_id
+    city = entry_punkt_city.get().strip()
+    redakcja_name = combo_punkt_red.get()
+    if not city or not redakcja_name:
+        messagebox.showerror("Błąd", "Uzupełnij wszystkie dane punktu.")
+        return
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if redakcja is None:
+        messagebox.showerror("Błąd", "Wybrana redakcja nie istnieje.")
+        return
+    coords = get_coordinates_for_city(city)
+    if coords is None:
+        messagebox.showerror("Błąd", f"Nie znaleziono współrzędnych GPS dla '{city}'.")
+        return
+    punkty_dystrybucji.append({"id": next_punkt_id, "city": city, "coords": coords, "redakcja_id": redakcja["id"]})
+    tree_punkt.insert("", "end", iid=str(next_punkt_id), values=(city, redakcja_name))
+    next_punkt_id += 1
+    entry_punkt_city.delete(0, tk.END)
+    combo_punkt_red.set('')
+    update_map()
+
+def update_punkt():
+    selected = tree_punkt.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    city = entry_punkt_city.get().strip()
+    redakcja_name = combo_punkt_red.get()
+    coords = get_coordinates_for_city(city)
+    redakcja = next((r for r in redakcje if r["name"] == redakcja_name), None)
+    if not city or not redakcja or coords is None:
+        messagebox.showerror("Błąd", "Nieprawidłowe dane.")
+        return
+    for p in punkty_dystrybucji:
+        if p["id"] == item_id:
+            p["city"] = city
+            p["coords"] = coords
+            p["redakcja_id"] = redakcja["id"]
+    tree_punkt.item(str(item_id), values=(city, redakcja_name))
+    update_map()
+
+def delete_punkt():
+    global punkty_dystrybucji
+    selected = tree_punkt.selection()
+    if not selected:
+        return
+    item_id = int(selected[0])
+    punkty_dystrybucji = [p for p in punkty_dystrybucji if p["id"] != item_id]
+    tree_punkt.delete(selected[0])
+    update_map()
